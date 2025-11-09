@@ -43,6 +43,7 @@ streamlit
 opencv-python-headless
 numpy
 pandas
+```
 
 ## 🧠 Author
 
