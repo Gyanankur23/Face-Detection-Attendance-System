@@ -1,5 +1,3 @@
-# app.py
-
 import streamlit as st
 import cv2
 import numpy as np
@@ -28,7 +26,7 @@ def detect_faces(image):
 # --- Page 1: Live Detection ---
 if page == "Live Detection":
     st.title("Face Detection Attendance System")
-    st.markdown("Use webcam or upload an image to detect faces and log attendance.")
+    st.markdown("Detect faces using webcam or image upload and log attendance with name and roll number.")
 
     use_webcam = st.checkbox("Use Webcam (desktop only)")
     FRAME_WINDOW = st.empty()
@@ -48,13 +46,24 @@ if page == "Live Detection":
 
                 faces = detect_faces(frame)
                 for i, (x, y, w, h) in enumerate(faces):
-                    face_id = f"Face_{i+1}"
-                    timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-                    st.session_state.attendance_log.append({"Face ID": face_id, "Time": timestamp})
                     cv2.rectangle(frame, (x, y), (x+w, y+h), (0, 255, 0), 2)
-                    cv2.putText(frame, face_id, (x, y - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (255, 255, 255), 2)
+                    cv2.putText(frame, f"Face_{i+1}", (x, y - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (255, 255, 255), 2)
 
                 FRAME_WINDOW.image(cv2.cvtColor(frame, cv2.COLOR_BGR2RGB))
+
+                if len(faces) > 0:
+                    st.markdown("Face detected. Please enter details below:")
+                    name = st.text_input("Name")
+                    roll = st.text_input("Roll Number")
+                    if name and roll:
+                        timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+                        st.session_state.attendance_log.append({
+                            "Name": name,
+                            "Roll Number": roll,
+                            "Time": timestamp
+                        })
+                        st.success("Attendance recorded.")
+                        break
             cap.release()
 
     else:
@@ -64,12 +73,22 @@ if page == "Live Detection":
             image = cv2.imdecode(file_bytes, 1)
             faces = detect_faces(image)
             for i, (x, y, w, h) in enumerate(faces):
-                face_id = f"Face_{i+1}"
-                timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-                st.session_state.attendance_log.append({"Face ID": face_id, "Time": timestamp})
                 cv2.rectangle(image, (x, y), (x+w, y+h), (0, 255, 0), 2)
-                cv2.putText(image, face_id, (x, y - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (255, 255, 255), 2)
+                cv2.putText(image, f"Face_{i+1}", (x, y - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (255, 255, 255), 2)
             st.image(cv2.cvtColor(image, cv2.COLOR_BGR2RGB), caption="Detected Faces")
+
+            if len(faces) > 0:
+                st.markdown("Face detected. Please enter details below:")
+                name = st.text_input("Name")
+                roll = st.text_input("Roll Number")
+                if name and roll:
+                    timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+                    st.session_state.attendance_log.append({
+                        "Name": name,
+                        "Roll Number": roll,
+                        "Time": timestamp
+                    })
+                    st.success("Attendance recorded.")
 
 # --- Page 2: Attendance Records ---
 elif page == "Attendance Records":
